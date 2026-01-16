@@ -45,20 +45,30 @@ for fname in image_files:
     height, width = img_bgr.shape[:2]
     total_pixels = img_bgr.size
     total_pixels_resolution = height * width
-    print("Image Dimensions:")
-    print(f"  Width: {width} pixels")
-    print(f"  Height: {height} pixels")
-    print(f"Total number of pixels: {total_pixels_resolution}")
+
+    height_gray, width_gray = img_gray.shape
+    total_pixels_gray = img_gray.size
+    total_pixels_resolution_gray = height_gray * width_gray
+
+    print("Image Dimensions Original:")
+    print(f"  Width Orignimal: {width} pixels")
+    print(f"  Height Original: {height} pixels")
+    print(f"Total number of pixels Original: {total_pixels_resolution}")
+
+    print("Image Dimensions Grayscale:")
+    print(f"  Width Grayscale: {width_gray} pixels")
+    print(f"  Height Grayscale: {height_gray} pixels")
+    print(f"Total number of pixels Grayscale: {total_pixels_resolution_gray}")
 
     # d)  minimum and maximum pixel values
     min_val = np.min(img_gray)
     max_val = np.max(img_gray)
-    print(f"Minimum pixel value: {min_val}")
-    print(f"Maximum pixel value: {max_val}")
+    print(f"Minimum pixel value Grayscale: {min_val}")
+    print(f"Maximum pixel value Grayscale: {max_val}")
 
     # e) mean pixel value
     mean_val = np.mean(img_gray)
-    print(f"Mean pixel value: {mean_val}")
+    print(f"Mean pixel value Grayscale: {mean_val}")
 
     # f) simple binarization Change the pixel values of the image in the following way: all pixels’ values less than the average calculated at (e) will be equal to 0 and all the others will be equal to 1. When displaying the image, make sure your displayed image is black and white, not black and near black.
     _, img_bin = cv2.threshold(img_gray, mean_val, 1, cv2.THRESH_BINARY)
