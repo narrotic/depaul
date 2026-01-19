@@ -21,7 +21,7 @@ image_files = ["1-bean-chicago.jpg", "1-fountain.jpeg", "1-noor-mahal.jpg"]
 
 # a) read the images
 for fname in image_files:
-    print(f"\nProcessing (Part 2): {fname}")
+    print(f"\nProcessing (Part 1): {fname}")
 
     path = os.path.join(DATA_DIR, fname)
     img_bgr = cv2.imread(path)
@@ -39,7 +39,7 @@ for fname in image_files:
     # plt.imshow(img_bgr)
     # plt.show()
     # img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2GRAY)
-    print(img_gray.shape)
+    print(f"Grayscale shape (Part 1): {img_gray.shape}")
 
     # c) size (width, height and total number of pixels) of the image
     height, width = img_bgr.shape[:2]
@@ -51,24 +51,24 @@ for fname in image_files:
     total_pixels_resolution_gray = height_gray * width_gray
 
     print("Image Dimensions Original:")
-    print(f"  Width Orignimal: {width} pixels")
-    print(f"  Height Original: {height} pixels")
-    print(f"Total number of pixels Original: {total_pixels_resolution}")
+    print(f"Width Orignial (Part 1): {width} pixels")
+    print(f"Height Original (Part 1): {height} pixels")
+    print(f"Total number of pixels Original (Part 1): {total_pixels_resolution}")
 
     print("Image Dimensions Grayscale:")
-    print(f"  Width Grayscale: {width_gray} pixels")
-    print(f"  Height Grayscale: {height_gray} pixels")
-    print(f"Total number of pixels Grayscale: {total_pixels_resolution_gray}")
+    print(f"Width Grayscale (Part 1): {width_gray} pixels")
+    print(f"Height Grayscale (Part 1): {height_gray} pixels")
+    print(f"Total number of pixels Grayscale (Part 1): {total_pixels_resolution_gray}")
 
     # d)  minimum and maximum pixel values
     min_val = np.min(img_gray)
     max_val = np.max(img_gray)
-    print(f"Minimum pixel value Grayscale: {min_val}")
-    print(f"Maximum pixel value Grayscale: {max_val}")
+    print(f"Minimum pixel value Grayscale (Part 1): {min_val}")
+    print(f"Maximum pixel value Grayscale (Part 1): {max_val}")
 
     # e) mean pixel value
     mean_val = np.mean(img_gray)
-    print(f"Mean pixel value Grayscale: {mean_val}")
+    print(f"Mean pixel value Grayscale (Part 1): {mean_val}")
 
     # f) simple binarization Change the pixel values of the image in the following way: all pixels’ values less than the average calculated at (e) will be equal to 0 and all the others will be equal to 1. When displaying the image, make sure your displayed image is black and white, not black and near black.
     _, img_bin = cv2.threshold(img_gray, mean_val, 1, cv2.THRESH_BINARY)
@@ -167,7 +167,7 @@ for fname in image_files:
     # c) --- Compute patch grid ---
     Pw = int(round(width / 100))   # patches along width (columns)
     Ph = int(round(height / 100))  # patches along height (rows)
-    print(f"Patch grid size: Pw={Pw}, Ph={Ph}")
+    print(f"Patch grid size (Part 2): Pw={Pw}, Ph={Ph}")
     
     # d) Compute patch sizes per row/col to handle remainder
     patch_widths = [width // Pw] * Pw
@@ -203,7 +203,7 @@ for fname in image_files:
             patch = img_gray[y_start:y_start+ph, x_start:x_start+pw]
             patch_mean = np.mean(patch)
             patch_means.append(patch_mean)
-            print(f"Patch ({row_idx},{col_idx}) mean: {patch_mean:.2f}")
+            print(f"Patch (Part 2) ({row_idx},{col_idx}) mean: {patch_mean:.2f}")
             bin_patch = (patch >= patch_mean).astype(np.uint8) * 255
             gray_patch_bin[y_start:y_start+ph, x_start:x_start+pw] = bin_patch
             x_start += pw
@@ -286,7 +286,7 @@ for fname in image_files:
     # 1. Original grayscale image
     plt.subplot(2,5,1)
     plt.imshow(img_gray, cmap='gray')
-    plt.title(f"Original Gray ({fname})")
+    plt.title(f"Original Gray (Part 3) ({fname})")
     plt.axis('off')
     
     # 2. Quantized images for each gray level
