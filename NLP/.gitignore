@@ -1,0 +1,7 @@
+# The repo-root .gitignore excludes *.txt and *.zip; re-include them here so the
+# course data files (HW1 corpora, HW4 ngram tokens) and requirements are tracked.
+!*.txt
+!*.zip
+
+# ...but never track the venv, even though it contains .txt files
+.venv/

@@ -1,0 +1,57 @@
+# CSC583 NLP (Fall 2026) - top-level dependencies
+# Install:  uv pip install -r requirements.in   (or: pip install -r requirements.in)
+# Pinned, fully-resolved versions live in requirements.txt
+
+# --- Deep learning (instructor is using PyTorch) ---
+torch
+torchvision
+torchaudio
+
+# --- Scientific / data core ---
+numpy
+scipy
+pandas
+matplotlib
+scikit-learn
+
+# --- Notebooks ---
+jupyterlab
+notebook
+ipykernel
+ipywidgets
+
+# --- Classic NLP (HW1 preprocessing, HW4 ngrams/LM) ---
+nltk
+gensim
+
+# --- HuggingFace stack (HW5 summarization/generation) ---
+transformers
+tokenizers
+accelerate
+huggingface_hub
+datasets
+evaluate
+sentencepiece
+rouge_score
+bert_score
+
+# --- Embeddings & RAG (HW2, HW3) ---
+sentence-transformers
+chromadb
+langchain
+langchain-community
+langchain-chroma
+langchain-huggingface
+langchain-openai
+langchain-text-splitters
+tiktoken
+pypdf
+
+# --- API clients (HW5 / final project on agentic AI) ---
+openai
+anthropic
+requests
+
+# --- Misc ---
+python-dotenv
+tqdm
