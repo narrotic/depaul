@@ -1,0 +1,65 @@
+[project]
+name = "csc583-nlp"
+version = "0.1.0"
+description = "CSC 583 Natural Language Processing (Fall 2026) - assignments and final project"
+requires-python = ">=3.13"
+
+dependencies = [
+    # --- Deep learning (the course uses PyTorch) ---
+    "torch",
+    "torchvision",
+    "torchaudio",
+
+    # --- Scientific / data core ---
+    "numpy",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "scikit-learn",
+
+    # --- Notebooks ---
+    "jupyterlab",
+    "notebook",
+    "ipykernel",
+    "ipywidgets",
+
+    # --- Classic NLP (HW1 preprocessing, HW4 ngrams/LM) ---
+    "nltk",
+    "gensim",
+
+    # --- HuggingFace stack (HW5 summarization/generation) ---
+    "transformers",
+    "tokenizers",
+    "accelerate",
+    "huggingface-hub",
+    "datasets",
+    "evaluate",
+    "sentencepiece",
+    "rouge-score",
+    "bert-score",
+
+    # --- Embeddings & RAG (HW2, HW3) ---
+    "sentence-transformers",
+    "chromadb",
+    "langchain",
+    "langchain-community",
+    "langchain-chroma",
+    "langchain-huggingface",
+    "langchain-openai",
+    "langchain-text-splitters",
+    "tiktoken",
+    "pypdf",
+
+    # --- API clients (HW5 / final project on agentic AI) ---
+    "openai",
+    "anthropic",
+    "requests",
+
+    # --- Misc ---
+    "python-dotenv",
+    "tqdm",
+]
+
+[tool.uv]
+# This folder is coursework, not an installable library, so uv should not try to build it.
+package = false
