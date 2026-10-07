@@ -5,3 +5,6 @@
 
 # ...but never track the venv, even though it contains .txt files
 .venv/
+
+# HW3 vector stores (rebuilt by the notebook)
+chroma_db_*/
