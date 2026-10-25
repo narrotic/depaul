@@ -76,3 +76,7 @@ logs/
 
 *.zip
 *.txt
+
+# separate repos with their own remotes
+ml_ops_research/
+toxic-comment-classifier/
