@@ -1,0 +1,11 @@
+,effort=none,effort=high
+rouge1,0.4488,0.463
+rouge2,0.1809,0.1885
+rougeL,0.3524,0.3615
+mean_perplexity,146.7723,166.7096
+bertscore_precision,0.9099,0.9134
+bertscore_recall,0.919,0.9201
+bertscore_f1,0.9143,0.9166
+mean_words,20.035,18.69
+mean_output_tokens,28.185,236.435
+mean_reasoning_tokens,0.0,207.56

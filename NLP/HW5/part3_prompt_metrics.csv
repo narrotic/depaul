@@ -1,0 +1,8 @@
+,rouge1,rouge2,rougeL,mean_perplexity,bertscore_precision,bertscore_recall,bertscore_f1,mean_words
+T5 original (Part II),0.2566,0.0605,0.2016,148.6729,0.8541,0.8794,0.8664,21.265
+T5 fine-tuned (Part II),0.4513,0.2162,0.3759,156.4702,0.9208,0.9127,0.9165,16.38
+gpt-5.4-mini / zero_shot,0.3154,0.1068,0.2394,58.4393,0.8678,0.9185,0.8923,60.985
+gpt-5.4-mini / constrained,0.4488,0.1809,0.3524,146.7723,0.9099,0.919,0.9143,20.035
+gpt-5.4-mini / few_shot,0.4117,0.1562,0.3167,86.1179,0.8935,0.9243,0.9085,33.48
+gpt-5.4-mini / extract_then_write,0.3867,0.1486,0.3032,55.3297,0.8917,0.923,0.9069,36.515
+reference (human),,,,134.5986,,,,19.605

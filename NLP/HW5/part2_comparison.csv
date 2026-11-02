@@ -1,0 +1,9 @@
+,original (off-the-shelf),fine-tuned,change
+rouge1,0.2732,0.4647,0.1915
+rouge2,0.0714,0.2279,0.1565
+rougeL,0.2127,0.3856,0.1729
+mean_perplexity,138.2837,144.1231,5.8394
+bertscore_precision,0.8568,0.9209,0.064
+bertscore_recall,0.8813,0.9139,0.0325
+bertscore_f1,0.8687,0.9172,0.0485
+mean_words,21.5531,16.9841,-4.569

@@ -1,0 +1,15 @@
+idx,system,faithfulness,coverage,coherence,justification
+10,zero_shot,5,5,5,"Fully supported by the dialogue and covers the party, list, car request, grocery shopping, Gina's uncertainty, and Friday timing clearly."
+10,constrained,5,4,5,"Accurately states the main plan and Friday car/grocery request, but omits Gina's uncertainty and no-promises caveat."
+10,t5_original,5,1,1,"The quoted lines are from the dialogue, but they do not summarize the situation and are confusing on their own."
+10,t5_finetuned,2,1,4,It incorrectly says they will go to a party on Friday rather than plan a party and potentially shop for groceries on Friday.
+10,extract_then_write,5,5,5,"Accurately and clearly captures the party planning, list, request to ask about the car, grocery shopping together, Friday timing, and Gina's no-promises response."
+10,few_shot,5,5,5,"Faithfully covers Wanda's party plan, list and groceries, the request involving Gina's father's car, Friday timing, and Gina's uncertainty."
+10,reference,5,4,5,"Accurately captures the core events and Friday timing, but leaves out Wanda's list and Gina's uncertainty about whether her father will agree."
+50,t5_finetuned,1,1,5,It directly contradicts the dialogue because Jane rejects the drink invitation rather than agreeing to meet.
+50,constrained,3,3,4,It captures the rejected drink invitation but incorrectly says both told each other to forget it and omits the insulting escalation.
+50,zero_shot,5,5,5,"It accurately summarizes the invitation, rejection, defensive withdrawal, and escalation into mutual insults."
+50,reference,5,4,5,It is accurate and clear but somewhat undercovers the mutual insults and Nick's profanity at the end.
+50,t5_original,1,1,2,It misattributes Nick's lines to Jane and is only a fragment of the exchange.
+50,extract_then_write,5,4,5,"It accurately covers the invitation, insults, and Nick withdrawing and asking to forget the conversation, though it omits some initial context."
+50,few_shot,5,4,5,"It faithfully captures the rejection and hostile back-and-forth, though it does not mention Nick specifically saying to forget the drink and message."

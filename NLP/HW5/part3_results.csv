@@ -1,0 +1,28 @@
+idx,dialogue,reference,t5_original,t5_finetuned,zero_shot_summary,constrained_summary,few_shot_summary,extract_then_write_summary
+10,"Wanda: Let's make a party!
+Gina: Why?
+Wanda: beacuse. I want some fun!
+Gina: ok, what do u need?
+Wanda: 1st I need too make a list
+Gina: noted and then?
+Wanda: well, could u take yours father car and go do groceries with me?
+Gina: don't know if he'll agree
+Wanda: I know, but u can ask :)
+Gina: I'll try but theres no promisess
+Wanda: I know, u r the best!
+Gina: When u wanna go
+Wanda: Friday?
+Gina: ok, I'll ask",Wanda wants to throw a party. She asks Gina to borrow her father's car and go do groceries together. They set the date for Friday. ,"Gina: ok, what do u need? Wanda: I know, u r the best!",Gina and Wanda will go to a party on Friday.,"Wanda wants to throw a party for fun and asks Gina for help. First, Wanda says she needs to make a list, then asks Gina to see if she can borrow her father’s car so they can go grocery shopping together. Gina is unsure her father will agree but promises to ask. They agree to try for Friday.",Wanda plans a party and needs to make a list first. Gina will ask her father about using his car for Friday grocery shopping with Wanda.,"Wanda wants to throw a party and is making a list and planning groceries. She asks Gina to borrow her father’s car and go shopping on Friday, and Gina says she’ll ask him but can’t promise.","Wanda and Gina talked about making a party and planning the preparations. Wanda said she needs to make a list and asked Gina to ask her father about using his car to go grocery shopping together on Friday, and Gina said she would ask but made no promises."
+50,"Nick: You look absolutely gorgeous and have a lovely smile. 
+Nick: Would love to get to know you a bit more. How about we meet up for a drink sometime?
+Jane: Hmmm... You're shooting a bit above your range aren't you?
+Nick: Why would you think that hon?
+Jane: Because I'm not that desperate.
+Nick: That was a bit below the belt.
+Nick: You're nice but you're not THAT hot.
+Jane: Oh is your poor little dick shriveling at the thought?
+Nick: Actually I'll take it back. Forget about the drink.
+Nick: Forget I ever wrote to you.
+Jane: Bye loser!
+Nick: Fucking bitch!
+Jane: You're welcome!",Nick finds Jane pretty and invites her for a drink to get to know her better. Jane rejects Nick and is unpleasant to him. Nick suggests Jane to forget about their conversation.,Jane: You're nice but you're not THAT hot. Jane: Actually I'll take it back.,Nick and Jane are going to meet for a drink.,"Nick compliments Jane and asks to meet for a drink. Jane dismisses him, insulting him and implying he’s out of her league. Nick gets defensive, says she’s not that attractive, and tries to withdraw the invitation. The exchange quickly devolves into mutual insults, ending with Jane calling him a loser and Nick responding with profanity.","Nick asked Jane to meet for a drink, but Jane declined and the exchange ended with both telling each other to forget it.","Nick asked Jane out for a drink, but she rejected him and insulted him. They ended up trading insults and angrily ended the conversation.",Nick and Jane exchange insults after Nick asks Jane to meet for a drink. Nick then says to forget about the drink and to forget that he ever wrote to her.

@@ -8,3 +8,8 @@
 
 # HW3 vector stores (rebuilt by the notebook)
 chroma_db_*/
+
+# HW5 model checkpoints (recreated by the Part II notebook)
+HW5/t5-small-samsum-finetuned/
+HW5/t5-small-samsum-checkpoints/
+HW5/sweep-tmp/

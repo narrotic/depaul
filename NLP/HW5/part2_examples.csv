@@ -1,0 +1,28 @@
+idx,dialogue,reference,original,fine_tuned
+10,"Wanda: Let's make a party!
+Gina: Why?
+Wanda: beacuse. I want some fun!
+Gina: ok, what do u need?
+Wanda: 1st I need too make a list
+Gina: noted and then?
+Wanda: well, could u take yours father car and go do groceries with me?
+Gina: don't know if he'll agree
+Wanda: I know, but u can ask :)
+Gina: I'll try but theres no promisess
+Wanda: I know, u r the best!
+Gina: When u wanna go
+Wanda: Friday?
+Gina: ok, I'll ask",Wanda wants to throw a party. She asks Gina to borrow her father's car and go do groceries together. They set the date for Friday. ,"Gina: ok, what do u need? Wanda: I know, u r the best!",Gina and Wanda will go to a party on Friday.
+50,"Nick: You look absolutely gorgeous and have a lovely smile. 
+Nick: Would love to get to know you a bit more. How about we meet up for a drink sometime?
+Jane: Hmmm... You're shooting a bit above your range aren't you?
+Nick: Why would you think that hon?
+Jane: Because I'm not that desperate.
+Nick: That was a bit below the belt.
+Nick: You're nice but you're not THAT hot.
+Jane: Oh is your poor little dick shriveling at the thought?
+Nick: Actually I'll take it back. Forget about the drink.
+Nick: Forget I ever wrote to you.
+Jane: Bye loser!
+Nick: Fucking bitch!
+Jane: You're welcome!",Nick finds Jane pretty and invites her for a drink to get to know her better. Jane rejects Nick and is unpleasant to him. Nick suggests Jane to forget about their conversation.,Jane: You're nice but you're not THAT hot. Jane: Actually I'll take it back.,Nick and Jane are going to meet for a drink.
