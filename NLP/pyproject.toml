@@ -9,24 +9,20 @@ dependencies = [
     "torch",
     "torchvision",
     "torchaudio",
-
     # --- Scientific / data core ---
     "numpy",
     "scipy",
     "pandas",
     "matplotlib",
     "scikit-learn",
-
     # --- Notebooks ---
     "jupyterlab",
     "notebook",
     "ipykernel",
     "ipywidgets",
-
     # --- Classic NLP (HW1 preprocessing, HW4 ngrams/LM) ---
     "nltk",
     "gensim",
-
     # --- HuggingFace stack (HW5 summarization/generation) ---
     "transformers",
     "tokenizers",
@@ -37,7 +33,6 @@ dependencies = [
     "sentencepiece",
     "rouge-score",
     "bert-score",
-
     # --- Embeddings & RAG (HW2, HW3) ---
     "sentence-transformers",
     "chromadb",
@@ -49,15 +44,15 @@ dependencies = [
     "langchain-text-splitters",
     "tiktoken",
     "pypdf",
-
     # --- API clients (HW5 / final project on agentic AI) ---
     "openai",
     "anthropic",
     "requests",
-
     # --- Misc ---
     "python-dotenv",
     "tqdm",
+    "mcp>=2.3.0",
+    "langchain-anthropic>=1.7.10",
 ]
 
 [tool.uv]

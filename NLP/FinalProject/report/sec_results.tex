@@ -1,0 +1,215 @@
+\section{Results}
+
+\subsection{Part 1: Baseline on the RAG evaluation set}
+On the 23 single-article questions the baseline used 2.0 tool calls, 5.9\,s and \$0.019 per question. It
+retrieved the exact source article for 12 of the 19 linked questions (63\%). Manual inspection showed that
+five of the seven misses were generic questions (``What is Agrivoltaics?'', ``What is the EU's Green Deal
+Industrial Plan?'') that many articles answer. The agent answered them correctly from another article; for the
+Green Deal question, the article it cited gives the reference definition almost word for word. The two real misses
+needed one specific detail, such as the origin of Iceland's geothermal turbines. Here the agent stated that it could
+not find the answer rather than inventing one. Article-level recall therefore understates answer quality on
+generic questions, a caveat that also applies to the 50-question set.
+
+\subsection{Retrieval accuracy}
+Table~\ref{tab:retrieval} ranks articles for the 50 synthesis questions. The from-scratch BM25 is the
+strongest single retriever (MRR 0.636), well ahead of the bge-base dense model (0.542). These questions are
+dense with proper nouns and figures (\textit{Kosice}, \textit{CMBlu}, \textit{EUR 56.1 million}), which is
+exactly what exact lexical match rewards. A general 110M-parameter embedding instead places ``Kosice
+geothermal'' near every geothermal article in the corpus. Plain RRF does not beat BM25, because it gives the weaker
+dense list an equal vote. The cross-encoder recovers that loss and gives the best Recall@5 (0.607), Recall@10
+(0.673) and nDCG@10 (0.576) of the single-query retrievers.
+
+\begin{table}[t]
+\caption{Ranked article retrieval on CleanTech-50 (mean over 50 questions)}
+\label{tab:retrieval}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccc}
+\toprule
+Configuration & R@1 & R@3 & R@5 & R@10 & MRR & nDCG \\
+\midrule
+BM25 (scratch)          & \textbf{.355} & \textbf{.530} & .550 & .630 & \textbf{.636} & .560 \\
+Dense (bge-base)        & .330 & .410 & .460 & .543 & .542 & .476 \\
+Hybrid RRF              & .337 & .493 & .545 & .627 & .610 & .542 \\
+Hybrid RRF + rerank     & .352 & .527 & \textbf{.607} & .673 & .619 & \textbf{.576} \\
+\midrule
+Crew v1: planner queries  & .317 & .382 & .517 & .637 & .557 & .512 \\
+Crew v2: anchor + planner & .295 & .507 & .573 & \textbf{.697} & .595 & .556 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The bottom rows rank the articles retrieved by the crew's own search queries, fused with RRF. v1's
+decomposed queries put fewer referenced articles in the top three than searching with the plain question (R@3 0.38
+vs 0.53). Turning ``barriers mentioned in \emph{the interviews}'' into generic keyword queries drops the words that
+point to the specific interview. Adding an anchor query on the whole question (v2) restores the top ranks and gives
+the best Recall@10 and Recall@20 (0.724) of any configuration, because the sub-queries reach articles for the second
+half of comparison questions.
+
+Fig.~\ref{fig:retrieval} (right) shows what the agents read and cite. The crew retrieves the most referenced
+articles (evidence recall 0.766 vs 0.657 for the baseline) and cites the most (0.714 vs 0.645). Swapping only the
+retriever inside the baseline closes about a third of that gap (0.698). The crew's weakness is breadth: it reads
+about 34 articles and cites about 7 per answer, so its citation precision (0.290) is lower than the baseline's
+(0.392).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{retrieval.png}
+\caption{Left: Recall@$k$ of the ranked retrievers. Right: evidence recall, citation recall and citation precision of
+the agents.}
+\label{fig:retrieval}
+\end{figure*}
+
+\subsection{Response accuracy}
+Table~\ref{tab:main} and Fig.~\ref{fig:judge} give the main results. The judge metrics carry 95\% bootstrap confidence intervals in the
+notebook; with 50 questions, fact-recall differences below about 0.06 are within noise.
+
+\begin{table*}[t]
+\caption{Response accuracy on CleanTech-50 (mean over 50 questions). FR = judge fact recall; Corr = judge
+correctness (1--5); Faith = share of claims supported by the cited sources; Contr = contradicted key facts;
+BERTS = rescaled BERTScore F1; cost and latency per question.}
+\label{tab:main}
+\centering
+\begin{tabular}{lcccccccc}
+\toprule
+System & FR $\uparrow$ & Corr $\uparrow$ & Faith $\uparrow$ & Contr $\downarrow$ & BERTS $\uparrow$ & ROUGE-L $\uparrow$ & Cost (\$) & Latency (s) \\
+\midrule
+Closed-book (Sonnet 5.5)       & .474 & 3.06 & --   & .010 & .060 & .139 & .007 & 6.1 \\
+Baseline (Part 1, ReAct)       & .672 & 3.76 & \textbf{.966} & .016 & .111 & \textbf{.176} & .022 & 6.9 \\
+Baseline + hybrid retrieval    & .628 & 3.76 & .964 & .013 & \textbf{.112} & .172 & .022 & 9.4 \\
+Crew v1                        & .559 & 3.40 & .927 & .029 & .070 & .160 & .173 & 55.8 \\
+Crew v2                        & .603 & 3.62 & .926 & .040 & .080 & .164 & .175 & 43.5 \\
+\quad v2, no critic (first draft) & .630 & 3.66 & .909 & .031 & .094 & .170 & -- & -- \\
+\quad v2, plain prose (no STE) & \textbf{.683} & \textbf{3.84} & .915 & .024 & .097 & .165 & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{judge_scores.png}
+\caption{LLM-judge scores per system with 95\% bootstrap confidence intervals. Closed-book has no citations, so no faithfulness.}
+\label{fig:judge}
+\end{figure*}
+
+\textbf{Retrieval is the largest effect.} Grounding the same model in the corpus raises fact recall from 0.474
+to 0.672 and correctness from 3.06 to 3.76 (both $p<0.001$; 35 wins, 8 losses). The per-topic view
+(Fig.~\ref{fig:topics}) shows why. Without retrieval, recall collapses on Geothermal (0.27), Policy (0.23) and
+Solar (0.33), whose questions hinge on specific 2023 projects that no model saw in pre-training. It stays at 0.71 on
+Climate \& Environment, where general science suffices.
+
+\textbf{Answers are faithful.} 97\% of the baseline's claims and 93\% of the crew's are supported by the passages
+they cite, and at most 4\% of key facts are contradicted. The output guardrail removed no hallucinated citation
+in any answer: the writer cited only ids it had been shown.
+
+\textbf{The multi-agent crew does not beat the single agent.} Crew v2 recalls fewer reference facts than the
+baseline (0.603 vs 0.672, $p=0.002$) and is less faithful ($p<0.001$); the correctness gap is not significant
+($p=0.07$). Its best configuration, the first draft re-written without the STE instruction, is the top system
+on fact recall (0.683) and correctness (3.84), but it is only level with the baseline, at eight times the cost and
+six times the latency.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{topics.png}
+\caption{Judge fact recall by topic and system (number of questions in parentheses).}
+\label{fig:topics}
+\end{figure}
+
+\subsection{Ablations}
+Because both ablations re-use v2's saved evidence, each changes exactly one component.
+
+\textbf{ASD-STE100 trades content for readability.} The STE instruction works as intended
+(Table~\ref{tab:ste}). The crew's sentences average 11 words against 23 in the references, 97\% fit the STE
+limit, passive voice falls to 2\%, and Flesch Reading Ease rises from 16 (``very difficult'') to 50. On identical
+evidence, however, the plain-prose writer recalls 5.2 points more key facts ($p<0.001$) and scores 0.18 higher on
+correctness ($p=0.01$). Short sentences leave room for fewer facts in the same word budget, and STE's simplification
+drops qualifiers that the reference counts as facts. This is a concrete, measured cost of Karpathy's suggestion:
+STE answers are easier to \emph{review}, but on this task they are about 8\% less complete.
+
+\begin{table}[t]
+\caption{Readability and STE compliance (rule-based checker)}
+\label{tab:ste}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
+\toprule
+Text & Words/sent. & $\le$ limit & Passive & Flesch \\
+\midrule
+Reference answers      & 23.0 & 62\% & 10.0\% & 16 \\
+Closed-book            & 16.8 & 83\% & 9.3\% & 31 \\
+Baseline (Part 1)      & 12.1 & 99\% & 8.6\% & 43 \\
+Crew v2 (STE)          & 11.0 & 97\% & 2.3\% & 50 \\
+Crew v2, plain prose   & 16.8 & 84\% & 14.4\% & 37 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{The critic adds cost, not measurable quality.} Comparing v2's final answer with its first draft, the critic
+loop has no significant effect on fact recall ($-0.028$, $p=0.13$) or correctness ($p=0.56$). It nudges
+faithfulness up ($+0.017$, $p=0.08$), which is its purpose. It requested a revision for 44 of 50 first drafts, and
+most revisions added caveats rather than facts.
+
+\textbf{Retrieval alone does not transfer to the baseline.} Giving the baseline the hybrid retriever raised its
+evidence recall but left its answers unchanged (fact recall $-0.04$, $p=0.09$; correctness identical). A single
+focused query per turn already finds what the agent needs for its answer; the extra articles mattered only in the
+crew, where several researchers query different aspects.
+
+\subsection{From v1 to v2: error analysis}
+\label{sec:v2}
+Crew v1 scored clearly below the baseline (fact recall 0.559). Inspecting its traces revealed three
+implementation faults and two design faults:
+(i) text read through \texttt{get\_article} or \texttt{summarize\_article} was cited but never recorded as
+evidence;
+(ii) the writer saw only the first 24 passages \emph{in arrival order}, so the last researcher's evidence could be
+dropped;
+(iii) the evaluation itself truncated cited sources to 9{,}000 characters, which penalised answers with many
+citations (fixing it raised every system's measured faithfulness, the baseline's from 0.85 to 0.97);
+(iv) decomposed queries lost the question's specificity (R@3 0.38); and (v) the critic demanded tangential
+additions. v2 records all evidence, ranks passages by reranker score, adds the anchor query, and narrows the
+critic. Fact recall rose to 0.603 ($p=0.08$) and correctness from 3.40 to 3.62 ($p=0.02$). Since these fixes were
+motivated by errors on the test set itself, v2's scores are optimistic; v1 is the fair first-attempt result.
+
+\subsection{Judge reliability and cost}
+The judge's fact recall correlates with BERTScore at $\rho=0.54$ and with ROUGE-L at $\rho=0.48$: it tracks meaning,
+but it is not simply a lexical metric. Re-grading 25 random answers with fresh calls gave the same correctness score
+80\% of the time and never differed by more than one point (quadratic-weighted $\kappa=0.82$). All agent runs in this study
+(Part~1, seven systems and both crew versions) cost \$24.67 in Anthropic API calls, as recorded by the usage
+callbacks; the judge's OpenAI calls are billed separately.
+
+\section{Discussion}
+\textbf{Why does the crew not win?} The error analysis points to a mismatch between the system's search space and
+the benchmark's construction. Every reference answer synthesizes 2--5 articles published in the same week, and
+questions refer to them as ``the interviews and reports''. The crew searches 20{,}111 articles with several
+researchers, so it finds the referenced articles more often than any other system. It then writes a broad,
+well-supported survey from about seven sources, and the reference facts are crowded out. The three lowest-scoring
+crew answers all follow this pattern. For Q21, the crew read the Diverso interview but answered ``barriers to
+geothermal'' from thirteen permitting articles, and the judge rated it accurate yet off-target. The single ReAct
+agent, by contrast, issues one or two focused queries and stays close to whatever it finds first, which on this
+benchmark is usually the right article.
+
+\textbf{What would help without overfitting?} A planner step that first resolves \emph{which} documents a question
+refers to (by entity, outlet and date) and then restricts synthesis to them; a critic that runs only when the
+draft contains unsupported claims; and STE applied as a presentation layer (a summary box) on top of complete
+prose, instead of as a constraint on the answer itself.
+
+\textbf{Limitations.} Fifty questions give wide confidence intervals; one judge model scores against one reference
+per question, and its key facts come from the same judge; and article-level retrieval metrics penalise correct
+answers drawn from other articles. Agent runs are stochastic (no temperature control on these models), so a
+re-run would shift individual scores; the reported numbers come from one cached run.
+
+\section{Conclusion}
+I built an agentic RAG system for 20{,}111 cleantech articles with six extensions: a from-scratch BM25 with RRF and
+reranking, an MCP tool server with a hand-written client, a planner/researcher/writer/critic crew with memory,
+input and output guardrails, ASD-STE100 answers with a compliance checker, and scholarly search. A rigorous
+evaluation shows that retrieval is the decisive component (+0.20 fact recall) and that BM25 beats dense
+retrieval on this entity-heavy corpus. Multi-agent decomposition finds 17\% more of the referenced articles.
+However, a single strong ReAct agent writes equally good answers at one eighth of the cost, and STE answers are far
+more readable but less complete. More agents are not automatically better: each component has to earn its cost on
+the target task, and only careful ablation shows which ones do.
+
+\section{Reflection}
+%%REFLECTION%%
+
+\section*{Acknowledgment}
+Claude (Anthropic) was used as a coding assistant. All design decisions, experiments and conclusions are my own and
+were checked against the notebook outputs.

@@ -1,0 +1,154 @@
+\section{Introduction}
+Retrieval-augmented generation (RAG) grounds a language model's answer in documents retrieved at query time
+\cite{lewis2020rag}. Agentic RAG goes one step further: the model decides \emph{when} and \emph{what} to
+retrieve, calling tools in a reason--act loop \cite{yao2023react}. This project builds such a system for the
+Cleantech Media Dataset \cite{lipenkova2024cleantech}, 20{,}111 news articles on renewable energy,
+storage, mobility and climate policy, and asks a practical question: \emph{which parts of a modern agentic
+stack actually improve answers to hard, multi-document questions, and which only add cost?}
+
+The work follows the three parts of the assignment. Part~1 builds a baseline agent with the required
+retriever and summarizer tools in LangGraph \cite{langgraph}. Part~2 adds six extensions, written from
+scratch where possible: (E1) hybrid retrieval with a hand-written BM25 \cite{robertson2009bm25} fused with
+dense search by Reciprocal Rank Fusion \cite{cormack2009rrf} and a cross-encoder reranker; (E2) all tools
+served over the Model Context Protocol (MCP) \cite{anthropic2024mcp} with a hand-written client; (E3) a
+multi-agent crew of a planner, parallel researchers, a writer and a critic, with conversation memory;
+(E4) input and output guardrails; (E5) answers in ASD-STE100 Simplified Technical English
+\cite{asdste100}, following Karpathy's suggestion \cite{nikhil2026karpathy}, verified by a rule-based checker;
+and (E6) a scholarly-search tool over OpenAlex \cite{priem2022openalex}. Part~3 (Option~A of the assignment) evaluates seven systems, including two simple baselines, on
+the 50-question \emph{CleanTech-50answers} test set, scoring retrieval against the referenced articles and
+answers against the desired outputs with lexical, semantic and LLM-as-judge metrics
+\cite{zheng2023judge}, with bootstrap confidence intervals, paired significance tests and ablations.
+
+\section{Data}
+\subsection{Corpus and cleaning}
+Each article's \texttt{content} field is a stringified Python list of paragraphs. Two scraping artefacts were
+found and fixed. First, about 20\% of articles contain one ``blob'' paragraph that is the whole article
+concatenated, followed by the same paragraphs again; any paragraph that contains at least two other
+paragraphs verbatim is dropped, which removes 7.8\% of the characters. Second, punctuation was tokenised by
+the scraper (\textit{Slovakia' s}, \textit{`` This}) and is re-joined so that BM25 sees normal words.
+
+\subsection{Chunking}
+Articles are packed paragraph by paragraph into chunks of at most 250 words (about 330 tokens, inside the
+512-token limit of the encoders), with the last paragraph repeated in the next chunk when it is short. Each
+chunk is embedded with its article title prepended, a \emph{contextual chunk header} that keeps short
+paragraphs attributable to their project. The result is 82{,}302 chunks (median 221 words, 4.1 per article).
+
+\subsection{Test sets}
+The official RAG evaluation set has 23 rows (21 unique single-article factoid questions); 19 link to an
+article in the corpus. The course's \emph{CleanTech-50answers} set has 50 multi-document synthesis questions
+in eight topics, each with a desired output and 1--5 referenced article ids (2.04 on average); all 29
+referenced articles are in the corpus. Notably, all of them were published within four days
+(1--4 September 2023), so each question is written around a few specific articles, while the system searches
+all 20{,}111.
+
+\section{System Design}
+Fig.~\ref{fig:arch} shows the final architecture.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.86\textwidth]{architecture.png}
+\caption{System architecture. The orchestration is a LangGraph state machine (top); all tools live in a
+separate MCP server process (bottom). Orange: guardrails; blue: LLM agents; green: MCP tools; purple: data
+and indexes.}
+\label{fig:arch}
+\end{figure*}
+
+\subsection{Part 1: Baseline agent}
+Chunks are embedded with \texttt{bge-base-en-v1.5} \cite{xiao2024cpack} (768-d, normalised; 45 minutes on
+an Apple M4 GPU, cached) and stored in a persistent Chroma collection with an HNSW cosine index. The
+baseline is LangGraph's prebuilt ReAct agent driven by Claude Sonnet~5.5 with two tools:
+\texttt{retrieve(query)}, which returns the top-5 chunks labelled with article ids, and
+\texttt{summarize(text, focus)}, a query-focused summary by Claude Haiku~5.5. The agent decides how often
+to search, then answers in 120--250 words with an article id after each fact.
+
+\subsection{E1: Hybrid retrieval}
+BM25 is implemented from scratch on a sparse document--term matrix. Tokens are lower-cased, stop-word
+filtered and Porter-stemmed, keeping numerals such as \texttt{2.3} and compounds such as
+\texttt{long-duration}. With $k_1{=}1.5$ and $b{=}0.75$, the full BM25 weight of every stored
+(chunk, term) pair is pre-computed, so scoring a query is a sum of a few sparse columns (4\,ms over 82k
+chunks). Reciprocal Rank Fusion, also from scratch, merges the BM25 and dense top-50 lists with
+$\mathrm{RRF}(d)=\sum_r 1/(60+\mathrm{rank}_r(d))$, using ranks only, so the two score scales never
+need calibration. The fused top-30 is re-scored by the cross-encoder \texttt{bge-reranker-base}
+\cite{nogueira2019passage}, and at most two chunks per article are kept. The larger
+\texttt{bge-reranker-v2-m3} was tested first but was 9$\times$ slower (8.1\,s per query) with no recall
+gain, too slow for agents that search about ten times per question.
+
+\subsection{E2: Model Context Protocol}
+All tools moved into an MCP server (official Python SDK, v2) that runs as a separate process and speaks
+JSON-RPC over stdio. It exposes \texttt{search\_corpus} (E1), \texttt{get\_article},
+\texttt{summarize\_article} (the Part~1 summarizer, now server-side) and \texttt{search\_openalex} (E6),
+each with a JSON schema. The server loads the indexes once in a lifespan hook, serialises GPU access with a
+lock (parallel researchers otherwise crashed PyTorch's non-thread-safe MPS backend), and caches LLM and
+web results on disk. The client, \texttt{MCPToolbox}, is written from scratch: it spawns the server,
+performs the \texttt{initialize} handshake, lists tools, and wraps each schema as a LangChain tool whose
+coroutine issues \texttt{tools/call}. Results are returned twice: as compact JSON for the model and as a
+structured \emph{artifact} the orchestrator uses for evidence tracking. Because the SDK's cancel scopes must
+be closed by the task that opened them, and Jupyter runs each cell as a new task, the session lives in a
+dedicated owner task.
+
+\subsection{E3: Multi-agent orchestration and memory}
+The crew is a LangGraph \texttt{StateGraph} with six nodes. The \textbf{planner} (Sonnet) rewrites the
+question to stand alone, using the conversation history, and splits it into 1--4 entity-specific
+sub-questions, each with 2--3 keyword queries; it also decides whether scholarly evidence is useful. Through
+LangGraph's \texttt{Send} API, one \textbf{researcher} per sub-question runs \emph{in parallel}: a Haiku ReAct
+agent that calls the MCP tools and writes cited notes. The \textbf{writer} (Sonnet) synthesizes one answer
+from all notes and passages, citing an article id after every fact. The \textbf{critic} (Sonnet) checks every
+claim and number against the evidence and returns a structured verdict: \emph{accept}, \emph{revise} (back to
+the writer, at most once) or \emph{research\_more}, in which case its list of gaps becomes new researcher tasks,
+a direct agent-to-agent interaction in the spirit of Self-Refine \cite{madaan2023selfrefine}. Parallel
+outputs are merged by list reducers. The graph is compiled with a checkpointer, so a \texttt{thread\_id}
+keeps its conversation; this memory resolves follow-ups such as ``what is the total cost of \emph{that}
+Slovak project?''. Structured decisions use Pydantic schemas enforced by Claude's JSON-schema output mode.
+Haiku (\$0.10/M input tokens) does the high-volume tool loops and Sonnet (\$2/M) does the judgment-heavy
+steps.
+
+\subsection{E4: Guardrails}
+On input, a regular expression catches common injection phrasings before any model sees the text, and Haiku
+classifies everything else as in-scope, off-topic, harmful or injection; only in-scope questions reach the
+planner. On output, a citation validator written from scratch keeps only citations whose article ids were
+actually retrieved, so a hallucinated source becomes a logged, measurable event rather than a silent one.
+
+\subsection{E5: ASD-STE100 answers}
+The writer is instructed with the core STE rules: sentences of at most 20 words (never above 25), one idea
+per sentence, active voice, one term per concept, short paragraphs. A rule-based checker, also from scratch,
+measures four STE rules (sentence length, paragraph length of at most six sentences, passive voice by a
+be-verb + participle heuristic, and multi-clause sentences) and the Flesch Reading Ease \cite{flesch1948}
+with a vowel-group syllable counter. Its compliance score is the mean pass-rate of the four rules.
+
+\subsection{E6: Scholarly search}
+\texttt{search\_openalex} queries OpenAlex (over 250 million works), keeps journal articles with abstracts,
+and rebuilds each abstract from OpenAlex's inverted-index format. The planner enables it only for science
+and technology claims; works are cited as \texttt{[OA:W\ldots]} and validated like article ids.
+
+\section{Evaluation Methodology (Part 3, Option A)}
+\subsection{Systems}
+Seven systems are compared on the 50 questions: \sys{Closed-book} (Sonnet without retrieval, a lower
+bound); the Part~1 \sys{Baseline}; \sys{Baseline+hybrid}, the same agent with the E1 retriever, which
+separates the retrieval upgrade from the orchestration upgrade; \sys{Crew v1}, the first version of the
+Part~2 system; \sys{Crew v2}, after the error analysis of v1 (Section~\ref{sec:v2}); and two ablations that
+re-use v2's saved evidence: \sys{no critic} (v2's first draft) and \sys{plain prose} (the writer re-run on
+identical evidence without the STE instruction).
+
+\subsection{Retrieval metrics}
+Retrieved chunks are collapsed to a ranked list of articles and scored against the referenced articles
+with Recall@$k$ (share of referenced articles in the top $k$), MRR (reciprocal rank of the first relevant
+article) and nDCG@10 \cite{jarvelin2002ndcg}. For the agents, which read sets rather than rankings, we report
+\emph{evidence recall} (referenced articles among everything retrieved), \emph{citation recall} (among
+those cited) and \emph{citation precision} (share of cited articles that are referenced). The last is a lower
+bound, since other articles in the corpus often support the same claim.
+
+\subsection{Response metrics}
+Answers are compared with the desired outputs after removing citations and Markdown, using ROUGE-L F1
+\cite{lin2004rouge}, BERTScore F1 with RoBERTa-large and baseline rescaling \cite{zhang2020bertscore}, and the
+cosine similarity of bge embeddings. Because overlap metrics cannot tell a paraphrase from a wrong number,
+an LLM judge is the primary metric. To limit known judge biases \cite{zheng2023judge}: the judge (OpenAI
+GPT-5.5) is from a different model family than the agents; it is anchored to the reference answer; its
+output is a validated schema; and the rubric is decomposed in the style of RAGAS and FActScore
+\cite{es2024ragas, min2023factscore}. Each desired output is first split once into atomic key facts
+(7.6 on average). For each answer, the judge labels every key fact \emph{supported}, \emph{partial},
+\emph{missing} or \emph{contradicted}, scores overall \emph{correctness} from 1 to 5, and counts the answer's
+claims and how many of them are supported by the passages of the articles the answer cites. This yields
+\emph{fact recall} $=(\text{supported}+0.5\,\text{partial})/\text{facts}$, a \emph{contradiction rate},
+and \emph{citation faithfulness} (supported claims / claims). Verdicts are cached by a hash of the exact
+prompt. 95\% confidence intervals come from 10{,}000 bootstrap resamples of the 50 questions, and systems
+are compared with the paired Wilcoxon signed-rank test.

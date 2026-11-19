@@ -13,3 +13,19 @@ chroma_db_*/
 HW5/t5-small-samsum-finetuned/
 HW5/t5-small-samsum-checkpoints/
 HW5/sweep-tmp/
+
+# Claude Code personal permission rules
+.claude/settings.local.json
+
+.history/
+artifacts/
+# Final project: LaTeX build files (artifacts/ above already covers the caches and indexes)
+FinalProject/report/*.aux
+FinalProject/report/*.log
+FinalProject/report/*.blg
+FinalProject/report/*.out
+FinalProject/report/build.log
+
+# Kaggle datasets (105 MB, over GitHub's file limit; download from Kaggle)
+cleantech_media_dataset_v3_2024-10-28.csv
+cleantech_rag_evaluation_data_2024-09-20.csv
