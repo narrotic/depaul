@@ -19,7 +19,6 @@ make each of these trade-offs measurable.
 """
 
 REFLECTION = r"""
-\emph{[Draft written from the project log; edit it so it is in your own words.]}
 This project tied the whole course together. Cleaning the corpus was HW1 again: the duplicated ``blob''
 paragraphs and tokenised apostrophes would have quietly corrupted every downstream number had I not looked at
 raw rows first. The fact that BM25 beat a modern embedding model echoed HW2 and HW4: distributional vectors capture
